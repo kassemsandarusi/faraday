@@ -45,15 +45,17 @@ module Faraday
       # @param type [String, Symbol] Type of Authorization
       # @param param [String, Symbol, Hash, Proc] parameter to build the Authorization header.
       #   This value can be a proc, in which case it will be invoked on each request.
-      def initialize(app, type, param)
+      # @param param [Bool] If true, assigns the header value even if it is already set on the request
+      def initialize(app, type, param, always_set_header = false)
         @type = type
         @param = param
+        @always_set_header = always_set_header
         super(app)
       end
 
       # @param env [Faraday::Env]
       def on_request(env)
-        return if env.request_headers[KEY]
+        return if env.request_headers[KEY] && !@always_set_header
 
         env.request_headers[KEY] = self.class.header(@type, @param)
       end
